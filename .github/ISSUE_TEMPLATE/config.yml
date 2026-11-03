@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage question
+    url: https://github.com/__GITHUB_USER__/cronport/discussions
+    about: Ask how to use cronport, or how to convert between two schedulers.

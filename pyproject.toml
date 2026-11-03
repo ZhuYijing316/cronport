@@ -1,0 +1,129 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cronport"
+version = "0.1.0"
+description = "One schedule, every runtime: explain, convert and lint cron expressions across cron, systemd, Kubernetes, GitHub Actions, AWS EventBridge and Quartz."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "__GITHUB_USER__" }]
+keywords = [
+    "cron",
+    "crontab",
+    "schedule",
+    "scheduler",
+    "systemd",
+    "kubernetes",
+    "github-actions",
+    "eventbridge",
+    "quartz",
+    "cli",
+    "devops",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "build>=1.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/__GITHUB_USER__/cronport"
+Repository = "https://github.com/__GITHUB_USER__/cronport"
+Issues = "https://github.com/__GITHUB_USER__/cronport/issues"
+Changelog = "https://github.com/__GITHUB_USER__/cronport/blob/main/CHANGELOG.md"
+
+[project.scripts]
+cronport = "cronport.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cronport"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/docs",
+    "/assets",
+    "/MAINTENANCE.md",
+    "/scripts",
+    "/README.md",
+    "/README.zh-CN.md",
+    "/LICENSE",
+    "/CHANGELOG.md",
+    "/CONTRIBUTING.md",
+    "/CODE_OF_CONDUCT.md",
+    "/SECURITY.md",
+]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra --strict-markers --strict-config"
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+source = ["cronport"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "\\.\\.\\.",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
+ignore = [
+    "E501",   # line length is handled by the formatter
+    "SIM105", # contextlib.suppress is slower than try/except in hot paths
+    "B008",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+warn_unreachable = true
+mypy_path = "src"
+packages = ["cronport"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false

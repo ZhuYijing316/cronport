@@ -1,0 +1,31 @@
+name: Label issues and pull requests
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@v5
+        with:
+          repo-labels: |
+            - label: bug
+              color: d73a4a
+            - label: enhancement
+              color: a2eeef
+            - label: documentation
+              color: 0075ca
+            - label: good first issue
+              color: 7057ff
+            - label: needs triage
+              color: fbca04
