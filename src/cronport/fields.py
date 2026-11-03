@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Dict, FrozenSet, Iterable, List, Optional, Tuple
+from typing import Dict, FrozenSet, Iterable, List, Optional, Set, Tuple
 
 from .errors import CronSyntaxError
 
@@ -214,7 +214,7 @@ def _parse_term(
                 field=field,
             )
 
-    values = set()
+    values: Set[int] = set()
     current = start
     while current <= end:
         values.add(current)
@@ -266,7 +266,7 @@ def parse_field(
             field=name,
         )
 
-    values: set = set()
+    values: Set[int] = set()
     for term in text.split(","):
         values |= _parse_term(term, name, low, high, aliases, expression)
 

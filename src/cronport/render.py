@@ -211,7 +211,7 @@ class Theme:
             cells.append([str(value) for value in padded])
         head = [str(value) for value in headers] + [""] * (column_count - len(headers))
 
-        widths = []
+        widths: List[int] = []
         for index in range(column_count):
             candidates = [display_width(head[index])] + [
                 display_width(row[index]) for row in cells
@@ -268,7 +268,7 @@ class Theme:
         if not pairs:
             return ""
         key_width = max(display_width(key) for key, _ in pairs)
-        lines = []
+        lines: List[str] = []
         for key, value in pairs:
             lines.append(
                 f"{indent}{self.dim(pad(key, key_width))}  {value}"

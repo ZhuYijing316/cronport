@@ -11,7 +11,7 @@ around it, and those differences are exactly what cronport exists to show:
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from ..expr import CronExpression
 from .base import (
@@ -87,7 +87,7 @@ class KubernetesDialect(Dialect):
 
     def render(self, expr: CronExpression, *, tz: Optional[str] = None) -> Conversion:
         notes: List[Note] = []
-        extras = {}
+        extras: Dict[str, str] = {}
         if expr.has_seconds:
             notes.append(
                 Note(
@@ -172,7 +172,7 @@ class GcpSchedulerDialect(Dialect):
 
     def render(self, expr: CronExpression, *, tz: Optional[str] = None) -> Conversion:
         notes: List[Note] = []
-        extras = {}
+        extras: Dict[str, str] = {}
         if expr.has_seconds:
             notes.append(
                 Note(

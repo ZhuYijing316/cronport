@@ -18,7 +18,7 @@ from typing import List, Optional
 
 from ..errors import CronSyntaxError
 from ..expr import CronExpression, DaySemantics
-from ..fields import compress, format_field
+from ..fields import format_field
 from .base import LEVEL_ERROR, LEVEL_INFO, LEVEL_WARNING, Conversion, Dialect, Note
 
 
@@ -119,8 +119,3 @@ class AwsEventBridgeDialect(Dialect):
         dow_text = "*" if dow_raw == "?" else dow_raw
         cron_text = f"{minute_raw} {hour_raw} {dom_text} {month_raw} {dow_text}"
         return CronExpression.parse(cron_text, dialect="cron")
-
-
-def compress_values(values) -> str:
-    """Public helper re-exported for the CLI."""
-    return compress(values)

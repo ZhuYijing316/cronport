@@ -121,3 +121,33 @@ class LintTests(unittest.TestCase):
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()
+
+
+class DriftMessageTests(unittest.TestCase):
+    """The drift message has to state the real numbers."""
+
+    def _message(self, expression: str, field: str) -> str:
+        for issue in lint(CronExpression.parse(expression), LintContext(tz="UTC")):
+            if issue.rule_id == "step-not-even":
+                return issue.message_en
+        raise AssertionError(f"{field}: no drift issue for {expression!r}")
+
+    def test_minute_drift_gap(self) -> None:
+        message = self._message("*/7 * * * *", "minute")
+        self.assertIn("4 minutes instead of 7", message)
+
+    def test_hour_drift_gap(self) -> None:
+        message = self._message("0 */5 * * *", "hour")
+        self.assertIn("4 units instead of 5", message)
+
+    def test_sub_range_drift_gap(self) -> None:
+        # 0-30/7 selects 0, 7, 14, 21, 28 -- so the gap back to the next
+        # cycle is 32 minutes, not 7.
+        message = self._message("0-30/7 * * * *", "minute")
+        self.assertIn("32 minutes instead of 7", message)
+
+    def test_chinese_message_is_not_about_minutes_for_hours(self) -> None:
+        issues = lint(CronExpression.parse("0 */5 * * *"), LintContext(tz="UTC"))
+        message = [i for i in issues if i.rule_id == "step-not-even"][0].message_zh
+        self.assertIn("个单位", message)
+        self.assertNotIn("分钟", message)

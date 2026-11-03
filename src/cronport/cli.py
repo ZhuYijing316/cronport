@@ -5,8 +5,8 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from datetime import datetime, timezone, tzinfo
+from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from . import __version__
 from .dialects import (
@@ -19,6 +19,7 @@ from .dialects import (
     parse_in,
 )
 from .errors import CronportError
+from .fields import FieldSpec
 from .expr import CronExpression, resolve_timezone
 from .explain import WEEKDAY_NAMES_EN, WEEKDAY_NAMES_ZH, explain
 from .lint import LintContext, lint
@@ -74,7 +75,7 @@ def _parse_expression(args: argparse.Namespace) -> CronExpression:
     return parse_in(source, args.expression)
 
 
-def _resolve_tz(args: argparse.Namespace):
+def _resolve_tz(args: argparse.Namespace) -> tzinfo:
     return resolve_timezone(getattr(args, "tz", None))
 
 
@@ -120,7 +121,7 @@ def cmd_explain(args: argparse.Namespace, theme: Theme) -> int:
         translator.text("value", "取值"),
         translator.text("meaning", "含义"),
     ]
-    rows = []
+    rows: List[List[str]] = []
     for item in explanation.fields:
         if translator.chinese:
             rows.append([item.name, item.raw, item.meaning_zh])
@@ -274,7 +275,7 @@ def cmd_convert(args: argparse.Namespace, theme: Theme) -> int:
         translator.text("expression", "表达式"),
         translator.text("note", "说明"),
     ]
-    rows = []
+    rows: List[List[str]] = []
     for item in conversions:
         note = ""
         if item.notes:
@@ -440,7 +441,7 @@ def cmd_diff(args: argparse.Namespace, theme: Theme) -> int:
     print(f"  {theme.error(theme.symbol('error'))} {theme.error(message)}")
     print()
 
-    rows = []
+    rows: List[List[str]] = []
     for name, left_spec, right_spec in _field_pairs(left, right):
         if left_spec.values == right_spec.values:
             continue
@@ -501,7 +502,7 @@ def cmd_presets(args: argparse.Namespace, theme: Theme) -> int:
         translator.text("description", "说明"),
         translator.text("category", "分类"),
     ]
-    rows = []
+    rows: List[List[str]] = []
     for preset in presets:
         title, title_zh = translator.pair(preset.title_en, preset.title_zh)
         description = title_zh if title_zh else title
@@ -543,7 +544,7 @@ def cmd_dialects(args: argparse.Namespace, theme: Theme) -> int:
         translator.text("what it is", "说明"),
         translator.text("aliases", "别名"),
     ]
-    rows = []
+    rows: List[List[str]] = []
     for dialect in list_dialects():
         rows.append([dialect.name, dialect.label, ", ".join(dialect.aliases) or "-"])
     print(theme.table(headers, rows))
@@ -555,7 +556,9 @@ def cmd_dialects(args: argparse.Namespace, theme: Theme) -> int:
 # ----------------------------------------------------------------------
 
 
-def _field_pairs(left: CronExpression, right: CronExpression):
+def _field_pairs(
+    left: CronExpression, right: CronExpression
+) -> Iterator[Tuple[str, FieldSpec, FieldSpec]]:
     left_fields = dict(left.fields)
     right_fields = dict(right.fields)
     for name, left_spec in left_fields.items():
@@ -566,7 +569,7 @@ def _field_pairs(left: CronExpression, right: CronExpression):
 
 
 def _field_differences(left: CronExpression, right: CronExpression) -> List[Dict[str, Any]]:
-    differences = []
+    differences: List[Dict[str, Any]] = []
     for name, left_spec, right_spec in _field_pairs(left, right):
         if left_spec.values != right_spec.values:
             differences.append(
@@ -577,6 +580,31 @@ def _field_differences(left: CronExpression, right: CronExpression) -> List[Dict
                 }
             )
     return differences
+
+
+def _dialect_argument(name: str, sources_only: bool = False) -> Callable[[str], str]:
+    """An argparse type that accepts a dialect name or one of its aliases."""
+    from .dialects import SOURCE_DIALECTS, canonical_name
+    from .errors import UnknownDialectError
+
+    def parse(value: str) -> str:
+        try:
+            canonical = canonical_name(value)
+        except UnknownDialectError:
+            known = ", ".join(sorted(SOURCE_DIALECTS if sources_only else DIALECTS))
+            raise argparse.ArgumentTypeError(
+                f"unknown dialect {value!r}; known dialects: {known}"
+            ) from None
+        if sources_only and canonical not in SOURCE_DIALECTS:
+            known = ", ".join(sorted(SOURCE_DIALECTS))
+            raise argparse.ArgumentTypeError(
+                f"{canonical!r} cannot be read as a source; "
+                f"cronport can read: {known}"
+            )
+        return canonical
+
+    parse.__name__ = name
+    return parse
 
 
 def _local_zone_name() -> str:
@@ -630,9 +658,8 @@ def build_parser() -> argparse.ArgumentParser:
             "--from",
             dest="source",
             default="cron",
-            choices=sorted(SOURCE_DIALECTS) + sorted(
-                {alias for dialect in list_dialects() for alias in dialect.aliases}
-            ),
+            type=_dialect_argument("source_dialect", sources_only=True),
+            metavar="{" + ",".join(sorted(SOURCE_DIALECTS)) + "}",
             help="the dialect the expression is written in (default: cron)",
         )
 
@@ -709,6 +736,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_source(convert_parser)
     convert_parser.add_argument(
         "--to",
+        type=_dialect_argument("target_dialect"),
+        metavar="{" + ",".join(sorted(DIALECTS)) + "}",
         help="target dialect (default: every dialect)",
     )
     convert_parser.add_argument("--tz", help="timezone to apply to the target")
@@ -726,6 +755,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_source(lint_parser)
     lint_parser.add_argument(
         "--target",
+        type=_dialect_argument("lint_target"),
+        metavar="{" + ",".join(sorted(DIALECTS)) + "}",
         help="the scheduler it will run on (default: cron)",
     )
     lint_parser.add_argument("--tz", help="timezone the schedule will run in")
@@ -779,7 +810,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     theme = Theme(color=False if args.no_color else None, ascii_only=args.ascii or None)
     try:
-        return args.func(args, theme)
+        return int(args.func(args, theme))
     except CronportError as error:
         _print_error(error, args.lang, theme)
         return EXIT_ERROR

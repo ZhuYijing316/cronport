@@ -7,7 +7,7 @@ being scattered across the code base.
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import List, Optional
 
 
 class CronportError(Exception):
@@ -51,7 +51,7 @@ class CronSyntaxError(CronportError):
         self.field = field
 
     def localized(self, lang: str = "en") -> str:
-        parts = []
+        parts: List[str] = []
         if self.expression:
             parts.append(f'"{self.expression}"')
         if self.field:

@@ -11,11 +11,11 @@ Quartz itself) and it differs from POSIX cron in three ways that matter:
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 from ..errors import CronSyntaxError
 from ..expr import CronExpression, DaySemantics
-from ..fields import format_field
+from ..fields import FieldSpec, format_field
 from .base import LEVEL_INFO, LEVEL_WARNING, Conversion, Dialect, Note
 
 
@@ -99,10 +99,8 @@ class QuartzDialect(Dialect):
         )
 
 
-def _spec(values):
+def _spec(values: Iterable[int]) -> FieldSpec:
     """Build a throwaway FieldSpec so ``format_field`` can be reused."""
-    from ..fields import FieldSpec
-
     ordered = sorted(values)
     return FieldSpec(
         name="second",

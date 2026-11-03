@@ -36,13 +36,7 @@ from .fields import (
     parse_field,
 )
 
-try:  # pragma: no cover - zoneinfo is stdlib from 3.9 onwards
-    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-except ImportError:  # pragma: no cover
-    ZoneInfo = None  # type: ignore[assignment,misc]
-
-    class ZoneInfoNotFoundError(Exception):  # type: ignore[no-redef]
-        pass
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
 #: ``@macro`` shorthands understood by Vixie cron.
@@ -658,13 +652,6 @@ def resolve_timezone(name: Optional[str]) -> tzinfo:
         return timezone.utc
     if cleaned.startswith(("+", "-")):
         return _parse_offset(cleaned)
-    if ZoneInfo is None:  # pragma: no cover - Python < 3.9 only
-        raise CronportError(
-            "this Python build has no zoneinfo module, timezone names are unavailable",
-            "当前 Python 版本缺少 zoneinfo 模块，无法使用时区名称",
-            hint="use a fixed offset such as +08:00",
-            hint_zh="请改用固定偏移量，例如 +08:00",
-        )
     try:
         return ZoneInfo(cleaned)
     except ZoneInfoNotFoundError:

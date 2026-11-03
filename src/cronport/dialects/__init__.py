@@ -10,15 +10,9 @@ from typing import Dict, List, Optional
 
 from ..errors import UnknownDialectError
 from ..expr import CronExpression
+from ..notes import LEVEL_ERROR, LEVEL_INFO, LEVEL_WARNING, Note
 from .aws_eventbridge import AwsEventBridgeDialect
-from .base import (
-    LEVEL_ERROR,
-    LEVEL_INFO,
-    LEVEL_WARNING,
-    Conversion,
-    Dialect,
-    Note,
-)
+from .base import Conversion, Dialect
 from .cron_like import (
     CronDialect,
     GcpSchedulerDialect,

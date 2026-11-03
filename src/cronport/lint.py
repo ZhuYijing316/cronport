@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional, Sequence, Tuple
+from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 from .expr import CronExpression, DaySemantics, days_in_month
 from .notes import LEVEL_ERROR, LEVEL_INFO, LEVEL_WARNING
@@ -37,7 +37,7 @@ class Issue:
     def hint(self, lang: str = "en") -> str:
         return self.hint_zh if lang.startswith("zh") and self.hint_zh else self.hint_en
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, object]:
         return {
             "rule": self.rule_id,
             "severity": self.severity,
@@ -90,13 +90,13 @@ class Rule:
 # ----------------------------------------------------------------------
 
 
-def _steps(raw: str) -> List[Tuple[Optional[int], Optional[int], int]]:
+def _steps(raw: str, low: int, high: int) -> List[Tuple[int, int, int]]:
     """Every stepped term in a field, as ``(first, last, step)``.
 
-    ``first`` and ``last`` are ``None`` for a term that starts at the bottom
-    of the field's range.
+    ``first`` and ``last`` are the values the term actually selects, so for
+    ``0-30/7`` they are ``0`` and ``28``, not ``0`` and ``30``.
     """
-    found: List[Tuple[Optional[int], Optional[int], int]] = []
+    found: List[Tuple[int, int, int]] = []
     for term in raw.split(","):
         if "/" not in term:
             continue
@@ -107,13 +107,20 @@ def _steps(raw: str) -> List[Tuple[Optional[int], Optional[int], int]]:
         if step <= 0:
             continue
         if base == "*":
-            found.append((None, None, step))
+            start, end = low, high
         elif "-" in base:
             start_text, _, end_text = base.partition("-")
-            if start_text.isdigit() and end_text.isdigit():
-                found.append((int(start_text), int(end_text), step))
+            if not (start_text.isdigit() and end_text.isdigit()):
+                continue
+            start, end = int(start_text), int(end_text)
         elif base.isdigit():
-            found.append((int(base), int(base), step))
+            start, end = int(base), high
+        else:
+            continue
+        if end < start:
+            continue
+        last = start + step * ((end - start) // step)
+        found.append((start, last, step))
     return found
 
 
@@ -127,24 +134,23 @@ def _drift_message(
 ) -> Tuple[str, str]:
     """Describe the uneven interval a step produces at the range boundary."""
     size = high - low + 1
-    remainder = size % step
     start = low if first is None else first
-    end = high if last is None else last
-    short_gap = (high + 1 - end) if end < high else step
-    short_gap = min(short_gap, step)
+    end = low + step * ((high - low) // step) if last is None else last
+    # The distance from the last firing of one cycle to the first firing of
+    # the next.  With a step that divides the range this equals the step;
+    # with a step that does not, it is shorter or longer.
+    gap = (high + 1 - end) + (start - low)
+    unit = "minute" if field_name == "minute" else "unit"
+    unit_zh = "分钟" if field_name == "minute" else "个单位"
     en = (
         f"the step {step} does not divide the {size} {field_name} values evenly, "
-        f"so the interval is not uniform: the last firing of a {field_name} is only "
-        f"{short_gap} minute(s) before the cycle starts again"
+        f"so the interval is not uniform: the gap between two cycles is {gap} "
+        f"{unit}s instead of {step}"
     )
-    if field_name != "minute":
-        en = en.replace("minute(s)", "unit(s)")
     zh = (
         f"步长 {step} 无法整除 {field_name} 的 {size} 个取值，间隔并不均匀："
-        f"该周期最后一次触发距下一周期开始只有 {short_gap} 分钟"
+        f"两个周期之间的间隔是 {gap} {unit_zh}，而不是 {step}"
     )
-    if field_name != "minute":
-        zh = zh.replace("只有 {short_gap} 分钟", f"只有 {short_gap} 个单位")
     return en, zh
 
 
@@ -220,7 +226,7 @@ def _rule_step_drift(expr: CronExpression, ctx: LintContext) -> Optional[Issue]:
     )
     for name, spec, low, high in fields:
         size = high - low + 1
-        for first, last, step in _steps(spec.raw):
+        for first, last, step in _steps(spec.raw, low, high):
             if size % step == 0:
                 continue
             en, zh = _drift_message(name, low, high, step, first, last)
