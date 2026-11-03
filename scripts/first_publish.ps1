@@ -70,7 +70,9 @@ try {
 
 Write-Step "checking the repository on GitHub"
 
-$repoUrl = "https://api.github.com/repos/$GitHubUser/$RepoName"
+$repoUrl  = "https://api.github.com/repos/$GitHubUser/$RepoName"
+$createUrl = "https://api.github.com/user/repos"
+
 $exists = $false
 try {
     Invoke-RestMethod -Uri $repoUrl -Headers $headers -Method Get | Out-Null
@@ -90,7 +92,9 @@ if (-not $exists) {
         auto_init   = $false
     } | ConvertTo-Json
     try {
-        Invoke-RestMethod -Uri $repoUrl -Headers $headers -Method Post -Body $body -ContentType "application/json" | Out-Null
+        # A repository is created with POST /user/repos, not with
+        # POST /repos/{owner}/{repo} -- the latter does not exist.
+        Invoke-RestMethod -Uri $createUrl -Headers $headers -Method Post -Body $body -ContentType "application/json" | Out-Null
         Write-Hint "created $GitHubUser/$RepoName (public)"
     } catch {
         Write-Fail "Could not create the repository: $($_.Exception.Message)"
@@ -138,12 +142,54 @@ if ($current -ne $remote) {
 
 Write-Step "pushing to GitHub"
 $basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$token"))
-git -c "http.extraheader=Authorization: Basic $basic" push -u origin $Branch
-if ($LASTEXITCODE -ne 0) {
+
+# git writes its progress to stderr.  While $ErrorActionPreference is "Stop"
+# PowerShell turns that into a terminating error, which would abort the
+# script right after a perfectly successful push.  Relax the preference
+# while the command runs, then judge the result by the exit code.
+$previousPreference = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
+$pushOutput = git -c "http.extraheader=Authorization: Basic $basic" push -u origin $Branch 2>&1
+$pushExitCode = $LASTEXITCODE
+$ErrorActionPreference = $previousPreference
+
+$pushOutput | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+
+if ($pushExitCode -ne 0) {
+    $reason = ($pushOutput | Out-String)
+
+    if ($reason -match "workflow") {
+        Write-Fail @"
+GitHub refused the push because the token is missing the 'workflow' scope.
+
+A token without it may not create or update files under .github/workflows/ ,
+and this repository ships a CI workflow.
+
+Create a new token with BOTH boxes ticked:
+    https://github.com/settings/tokens/new
+        [x] repo
+        [x] workflow
+
+Then run this script again -- the repository already exists, so it goes
+straight to the push.
+"@
+    }
+
+    if ($reason -match "Authentication failed|403|401") {
+        Write-Fail @"
+The push was rejected. The token is probably invalid, expired, or does not
+have the 'repo' scope.
+
+Create a new token at https://github.com/settings/tokens/new and tick
+both 'repo' and 'workflow', then run this script again.
+"@
+    }
+
     Write-Fail @"
 The push failed. Common reasons:
   * the token has no 'repo' permission -> create a new one and tick 'repo'
   * the token is expired -> create a new one
+  * the repository on GitHub has a different name than $RepoName
 "@
 }
 

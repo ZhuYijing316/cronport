@@ -34,6 +34,19 @@ function Write-Fail($message) {
     Write-Host $message -ForegroundColor Red
     exit 1
 }
+function Invoke-Native {
+    # Runs a native command and returns its exit code.  Native tools write
+    # their progress to stderr, and with $ErrorActionPreference set to
+    # "Stop" that would abort the script, so the preference is relaxed
+    # while the command runs.
+    param([string]$Exe, [string[]]$Arguments)
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    if ($Arguments) { & $Exe @Arguments } else { & $Exe }
+    $code = $LASTEXITCODE
+    $ErrorActionPreference = $previous
+    return $code
+}
 
 Set-Location (Join-Path $PSScriptRoot "..")
 
@@ -71,40 +84,48 @@ if (-not $env:TWINE_USERNAME) {
 # ------------------------------------------------------------------ release
 
 Write-Step "running the tests"
+$previous = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
 python -c "import pytest" 2>$null
-if ($LASTEXITCODE -ne 0) {
+$probeExit = $LASTEXITCODE
+$ErrorActionPreference = $previous
+if ($probeExit -ne 0) {
     Write-Fail @"
 pytest is not installed. Install the development tools first:
     python -m pip install -e ".[dev]"
 "@
 }
-python -m pytest -q
-if ($LASTEXITCODE -ne 0) { Write-Fail "The tests failed" }
+if ((Invoke-Native "python" @("-m", "pytest", "-q")) -ne 0) { Write-Fail "The tests failed" }
 
 Write-Step "building the distributions"
 if (Test-Path dist) { Remove-Item -Recurse -Force dist }
-python -m build
-if ($LASTEXITCODE -ne 0) { Write-Fail "The build failed" }
+if ((Invoke-Native "python" @("-m", "build")) -ne 0) { Write-Fail "The build failed" }
 
 Write-Step "checking the distributions"
+$previous = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
 python -c "import twine" 2>$null
-if ($LASTEXITCODE -ne 0) {
+$probeExit = $LASTEXITCODE
+$ErrorActionPreference = $previous
+if ($probeExit -ne 0) {
     Write-Fail @"
 twine is not installed. Install it first:
     python -m pip install build twine
 "@
 }
-python -m twine check dist/*
-if ($LASTEXITCODE -ne 0) { Write-Fail "twine check failed" }
+if ((Invoke-Native "python" @("-m", "twine", "check", "dist/*")) -ne 0) { Write-Fail "twine check failed" }
 
 Write-Step "uploading to PyPI"
-python -m twine upload dist/*
-if ($LASTEXITCODE -ne 0) { Write-Fail "The upload failed" }
+if ((Invoke-Native "python" @("-m", "twine", "upload", "dist/*")) -ne 0) { Write-Fail "The upload failed" }
 
 Write-Step "tagging"
+$previous = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
 git tag -a "v$Version" -m "v$Version"
 git push origin "v$Version"
-if ($LASTEXITCODE -ne 0) { Write-Fail "Pushing the tag failed" }
+$tagExit = $LASTEXITCODE
+$ErrorActionPreference = $previous
+if ($tagExit -ne 0) { Write-Fail "Pushing the tag failed" }
 
 # -------------------------------------------------------------- github
 
