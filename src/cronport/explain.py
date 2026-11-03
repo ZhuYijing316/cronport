@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from .expr import CronExpression, DaySemantics
+from .fields import FieldSpec
 
 WEEKDAY_NAMES_EN = (
     "Monday",
@@ -321,7 +322,7 @@ def _field_explanations(expr: CronExpression) -> List[FieldExplanation]:
     return result
 
 
-def _field_meaning(name: str, spec) -> Tuple[str, str]:
+def _field_meaning(name: str, spec: FieldSpec) -> Tuple[str, str]:
     """A short description of what one field selects."""
     values = spec.sorted_values()
     if spec.is_question:
