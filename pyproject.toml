@@ -9,7 +9,7 @@ description = "One schedule, every runtime: explain, convert and lint cron expre
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
-authors = [{ name = "__GITHUB_USER__" }]
+authors = [{ name = "ZhuYijing316" }]
 keywords = [
     "cron",
     "crontab",
@@ -53,10 +53,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/__GITHUB_USER__/cronport"
-Repository = "https://github.com/__GITHUB_USER__/cronport"
-Issues = "https://github.com/__GITHUB_USER__/cronport/issues"
-Changelog = "https://github.com/__GITHUB_USER__/cronport/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/ZhuYijing316/cronport"
+Repository = "https://github.com/ZhuYijing316/cronport"
+Issues = "https://github.com/ZhuYijing316/cronport/issues"
+Changelog = "https://github.com/ZhuYijing316/cronport/blob/main/CHANGELOG.md"
 
 [project.scripts]
 cronport = "cronport.cli:main"

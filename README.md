@@ -6,10 +6,10 @@ cronport explains a cron expression in plain language, converts it between
 seven scheduler dialects, and warns you about the ways a schedule can
 silently mean something *different* from what you meant.
 
-[![CI](https://github.com/__GITHUB_USER__/cronport/actions/workflows/ci.yml/badge.svg)](https://github.com/__GITHUB_USER__/cronport/actions/workflows/ci.yml)
+[![CI](https://github.com/ZhuYijing316/cronport/actions/workflows/ci.yml/badge.svg)](https://github.com/ZhuYijing316/cronport/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/cronport.svg)](https://pypi.org/project/cronport/)
 [![Python](https://img.shields.io/pypi/pyversions/cronport.svg)](https://pypi.org/project/cronport/)
-[![License](https://img.shields.io/pypi/l/cronport.svg)](https://github.com/__GITHUB_USER__/cronport/blob/main/LICENSE)
+[![License](https://img.shields.io/pypi/l/cronport.svg)](https://github.com/ZhuYijing316/cronport/blob/main/LICENSE)
 [![Downloads](https://img.shields.io/pypi/dm/cronport.svg)](https://pypistats.org/packages/cronport)
 
 ```console

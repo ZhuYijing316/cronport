@@ -5,10 +5,10 @@
 cronport 用人话解释 cron 表达式，把它在七种调度器方言之间互相转换，
 并且提醒你那些「看起来对、其实跑歪了」的坑。
 
-[![CI](https://github.com/__GITHUB_USER__/cronport/actions/workflows/ci.yml/badge.svg)](https://github.com/__GITHUB_USER__/cronport/actions/workflows/ci.yml)
+[![CI](https://github.com/ZhuYijing316/cronport/actions/workflows/ci.yml/badge.svg)](https://github.com/ZhuYijing316/cronport/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/cronport.svg)](https://pypi.org/project/cronport/)
 [![Python](https://img.shields.io/pypi/pyversions/cronport.svg)](https://pypi.org/project/cronport/)
-[![License](https://img.shields.io/pypi/l/cronport.svg)](https://github.com/__GITHUB_USER__/cronport/blob/main/LICENSE)
+[![License](https://img.shields.io/pypi/l/cronport.svg)](https://github.com/ZhuYijing316/cronport/blob/main/LICENSE)
 [![Downloads](https://img.shields.io/pypi/dm/cronport.svg)](https://pypistats.org/packages/cronport)
 
 ```console

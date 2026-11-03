@@ -73,9 +73,23 @@ $ git push origin v0.1.0
 去 GitHub 的 **Releases → Draft a new release → 选择 v0.1.0**，
 把 `CHANGELOG.md` 里 0.1.0 那段复制进去，Publish。
 
-### 3. 发 PyPI（可选但强烈建议）
+### 3. 发 PyPI（**必做**，不是可选）
 
-没有 PyPI 的话，别人只能用 `pip install git+...`，门槛高很多。
+**结论：要发。** 理由很直接 —— README 里最关键的那行是
+`pipx install cronport`，一行就能装上；没有 PyPI 就只能写
+`pip install git+https://github.com/...`，转化率会掉一大截。
+而 PyPI 的包名 `cronport` **目前还没被占用**，被人抢走就麻烦了。
+
+流程见 `MAINTENANCE.md` 第 3 节，核心就一条命令：
+
+```console
+$ export TWINE_USERNAME=ZhuYijing316
+$ export TWINE_PASSWORD=pypi-你的token
+$ export GITHUB_TOKEN=github_pat_你的token
+$ ./scripts/release.sh 0.1.0
+```
+
+（两个 token 的申请链接在 `MAINTENANCE.md` 里，各 2 分钟。）
 
 ```console
 $ export TWINE_USERNAME=<你的用户名>

@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-# Replace the __GITHUB_USER__ placeholder with your GitHub username.
+# Replace the placeholder with your GitHub username.
 #
 #   ./scripts/init_user.sh your-username
 #
 # Run this once, right after you clone the repository.
+#
+# The placeholder is assembled from two pieces on purpose: that way this
+# script never rewrites itself and stays usable more than once.
 set -euo pipefail
 
 USERNAME="${1:-}"
@@ -17,19 +20,28 @@ if ! [[ "$USERNAME" =~ ^[A-Za-z0-9-]+$ ]]; then
   exit 2
 fi
 
+PLACEHOLDER="__GITHUB""_USER__"
+
 cd "$(dirname "$0")/.."
 
-FILES=$(grep -rl '__GITHUB_USER__' . --exclude-dir=.git --exclude-dir=.venv || true)
+FILES=$(grep -rl "$PLACEHOLDER" . \
+  --exclude-dir=.git \
+  --exclude-dir=.venv \
+  --exclude-dir=dist \
+  --exclude-dir=build \
+  --exclude="$(basename "$0")" \
+  || true)
+
 if [[ -z "$FILES" ]]; then
   echo "no placeholders left, nothing to do"
   exit 0
 fi
 
 while IFS= read -r file; do
-  sed -i "s/__GITHUB_USER__/${USERNAME}/g" "$file"
+  sed -i "s/${PLACEHOLDER}/${USERNAME}/g" "$file"
   echo "updated ${file}"
 done <<< "$FILES"
 
 echo
 echo "Done. Check the result with:"
-echo "  grep -rn '__GITHUB_USER__' . --exclude-dir=.git || echo '  no placeholders left'"
+echo "  grep -rn '$PLACEHOLDER' . --exclude-dir=.git || echo '  no placeholders left'"

@@ -6,7 +6,7 @@ from an idea to a merged pull request.
 ## The five minute setup
 
 ```console
-$ git clone https://github.com/__GITHUB_USER__/cronport.git
+$ git clone https://github.com/ZhuYijing316/cronport.git
 $ cd cronport
 $ python -m venv .venv && source .venv/bin/activate
 $ pip install -e ".[dev]"

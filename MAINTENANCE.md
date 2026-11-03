@@ -82,32 +82,55 @@ $ cronport lint "他们的表达式"
 - 加了一个新方言或新规则 → 发
 - 只改了文档 → 不用发
 
-发版流程（**一条命令**）：
+### 步骤 1：改版本号
 
-```console
-$ export TWINE_USERNAME=你的用户名
-$ export TWINE_PASSWORD=pypi-你的token
-$ ./scripts/release.sh 0.1.1
+改 `pyproject.toml` 里的 `version = "0.1.0"` → `"0.1.1"`。
+
+### 步骤 2：写 CHANGELOG
+
+在 `CHANGELOG.md` 最上面加一段：
+
+```markdown
+## [0.1.1] - 2026-11-10
+
+### Fixed
+
+- 修复了 ... 的问题
 ```
 
-这条命令会自动：跑测试 → 打包 → 检查 → 上传到 PyPI。
-
-然后创建 GitHub release：
+### 步骤 3：提交
 
 ```console
-$ git tag -a v0.1.1 -m "v0.1.1"
-$ git push origin v0.1.1
+$ git add -A
+$ git commit -m "Release 0.1.1"
 $ git push
 ```
 
-最后在 GitHub 上点 **Releases → Draft a new release → 选择 v0.1.1 tag**，
-把 CHANGELOG 里对应的段落复制进去，点 Publish。
+### 步骤 4：一条命令发布
 
-**PyPI token 怎么拿**：
+```console
+$ export TWINE_USERNAME=ZhuYijing316
+$ export TWINE_PASSWORD=pypi-你的token
+$ export GITHUB_TOKEN=github_pat_你的token
+$ ./scripts/release.sh 0.1.1
+```
 
-1. 登录 <https://pypi.org/manage/account/token/>
-2. Name 填 `cronport`，Scope 选 `pypi:__GITHUB_USER__:cronport`
-3. 点 Create token，把生成的 `pypi-...` 字符串保存好（只显示一次）
+这条命令会自动：跑测试 → 打包 → 检查 → 上传 PyPI → 打 git tag 并推送 →
+创建 GitHub release（release 说明会自动从 CHANGELOG 里抽取）。
+
+**如果不想发 GitHub release**，把 `GITHUB_TOKEN` 留空即可，脚本会跳过那一步，
+你之后在网页上手动创建也来得及。
+
+**脚本会拦住你**的情况：版本号和 `pyproject.toml` 对不上、CHANGELOG 里没有
+对应段落、有没提交的改动、tag 已经存在、测试没通过。它不会替你做错决定。
+
+**两个 token 怎么拿**：
+
+- **PyPI**：<https://pypi.org/manage/account/token/>，Name 填 `cronport`，
+  Scope 选 `pypi:ZhuYijing316:cronport`，点 Create token 后复制生成的
+  `pypi-...` 字符串（只显示一次）
+- **GitHub**：<https://github.com/settings/tokens>，新建 personal access token，
+  勾选 `repo` 权限，复制 `github_pat_...`
 
 ---
 

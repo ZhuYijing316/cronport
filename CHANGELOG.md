@@ -31,5 +31,5 @@ The first release.
 - `--lang en`, `--lang zh` and `--lang both`.
 - A Python API: `CronExpression`, `convert`, `lint`, `explain`.
 
-[Unreleased]: https://github.com/__GITHUB_USER__/cronport/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/__GITHUB_USER__/cronport/releases/tag/v0.1.0
+[Unreleased]: https://github.com/ZhuYijing316/cronport/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/ZhuYijing316/cronport/releases/tag/v0.1.0
