@@ -16,7 +16,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/labeler@v5
+      - uses: actions/labeler@v7
         with:
           repo-labels: |
             - label: bug
