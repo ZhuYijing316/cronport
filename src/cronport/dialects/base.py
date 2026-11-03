@@ -14,10 +14,10 @@ schedule that has to be split across two rules.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from ..expr import CronExpression, DaySemantics
-from ..notes import LEVEL_ERROR, LEVEL_INFO, LEVEL_WARNING, Note
+from ..notes import LEVEL_ERROR, LEVEL_WARNING, Note
 
 #: Cron day-of-week numbers, Sunday first.
 DOW_NAMES = ("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")

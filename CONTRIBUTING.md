@@ -43,6 +43,8 @@ The most useful contributions, in rough order of how much they help:
 ## Style
 
 - Python 3.9 compatible, fully type annotated, standard library only.
+- `make format` applies ruff's formatting; the CI only lints, so formatting
+  differences never fail the build.
 - Docstrings on public functions, in the same voice as the rest of the code.
 - Every new behaviour needs a test. Every new rule needs a test that shows
   it firing *and* a test that shows it staying quiet.

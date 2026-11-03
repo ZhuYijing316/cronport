@@ -63,6 +63,7 @@ class NextTests(unittest.TestCase):
 
     def test_next_json(self) -> None:
         code, out, _ = run("--json", "next", "0 9 * * 1-5", "-n", "2", "--tz", "UTC")
+        self.assertEqual(code, EXIT_OK)
         payload = json.loads(out)
         self.assertEqual(len(payload["runs"]), 2)
         self.assertEqual(payload["runs"][0]["local"][:10], "2026-11-04")
@@ -95,6 +96,7 @@ class ConvertTests(unittest.TestCase):
 
     def test_convert_json(self) -> None:
         code, out, _ = run("--json", "convert", "0 9 * * 1-5", "--to", "systemd")
+        self.assertEqual(code, EXIT_OK)
         payload = json.loads(out)
         self.assertEqual(payload["conversions"][0]["expression"], "Mon..Fri *-*-* 09:00:00")
 
@@ -112,6 +114,7 @@ class LintTests(unittest.TestCase):
 
     def test_lint_json(self) -> None:
         code, out, _ = run("--json", "lint", "0 0 13 * 5", "--tz", "UTC")
+        self.assertEqual(code, EXIT_OK)
         payload = json.loads(out)
         self.assertFalse(payload["ok"])
         self.assertTrue(any(issue["rule"] == "dom-dow-or" for issue in payload["issues"]))

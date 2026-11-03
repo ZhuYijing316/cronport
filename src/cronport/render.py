@@ -225,20 +225,17 @@ class Theme:
                 widest = widths.index(max(widths))
                 widths[widest] = max(8, widths[widest] - overflow)
 
+        rule = "-" if self.ascii_only else "─"
         if self.ascii_only:
-            top = "+" + "+".join("-" * (width + 2) for width in widths) + "+"
-            mid = "+" + "+".join("-" * (width + 2) for width in widths) + "+"
+            top = "+" + "+".join(rule * (width + 2) for width in widths) + "+"
             bot = top
-            tee = "+" + "+".join("-" * (width + 2) for width in widths) + "+"
-            left, right, fill = "|", "|", "-"
-            tleft, tright, tmid = "+", "+", "+"
+            tee = top
+            left, right = "|", "|"
         else:
-            top = "┌" + "┬".join("─" * (width + 2) for width in widths) + "┐"
-            mid = "├" + "┼".join("─" * (width + 2) for width in widths) + "┤"
-            bot = "└" + "┴".join("─" * (width + 2) for width in widths) + "┘"
-            tee = "├" + "┼".join("─" * (width + 2) for width in widths) + "┤"
-            left, right, fill = "│", "│", "─"
-            tleft, tright, tmid = "┌", "┐", "┬"
+            top = "┌" + "┬".join(rule * (width + 2) for width in widths) + "┐"
+            bot = "└" + "┴".join(rule * (width + 2) for width in widths) + "┘"
+            tee = "├" + "┼".join(rule * (width + 2) for width in widths) + "┤"
+            left, right = "│", "│"
 
         lines: List[str] = []
         lines.append(indent + top)

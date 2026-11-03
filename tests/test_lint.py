@@ -84,8 +84,9 @@ class LintTests(unittest.TestCase):
         issues = lint(
             CronExpression.parse("0 0 30 2 *"), LintContext(target="cron", tz="UTC")
         )
+        order = {"error": 0, "warning": 1, "info": 2}
         levels = [issue.severity for issue in issues]
-        self.assertEqual(levels, sorted(levels, key=lambda level: {"error": 0, "warning": 1, "info": 2}[level]))
+        self.assertEqual(levels, sorted(levels, key=lambda level: order[level]))
 
     def test_every_issue_has_both_languages(self) -> None:
         for expression in ["0 0 13 * 5", "0 0 30 2 *", "*/7 * * * *"]:

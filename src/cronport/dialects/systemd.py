@@ -18,17 +18,15 @@ from __future__ import annotations
 
 import re
 from dataclasses import replace
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 
 from ..errors import CronSyntaxError
 from ..expr import CronExpression, DaySemantics
 from ..fields import compress
+from ..notes import LEVEL_INFO, LEVEL_WARNING, Note
 from .base import (
-    LEVEL_INFO,
-    LEVEL_WARNING,
     Conversion,
     Dialect,
-    Note,
     dom_component,
     dow_component,
     month_component,
@@ -143,7 +141,9 @@ class SystemdDialect(Dialect):
             pieces.append(dow_component(expr.dow.values))
         month_restricted = not expr.month.is_star
         if dom and month_restricted:
-            pieces.append(f"*-{month_component(expr.month.values)}-{dom_component(expr.dom.values)}")
+            month = month_component(expr.month.values)
+            day = dom_component(expr.dom.values)
+            pieces.append(f"*-{month}-{day}")
         elif dom:
             pieces.append(f"*-*-{dom_component(expr.dom.values)}")
         elif month_restricted:
@@ -212,8 +212,8 @@ class SystemdDialect(Dialect):
                 )
             )
 
-        dom_expr = compress(sorted(days)) if dom_restricted else "*"
-        month_expr = compress(sorted(months)) if month_restricted else "*"
+        dom_expr = compress(sorted(days)) if dom_restricted and days else "*"
+        month_expr = compress(sorted(months)) if month_restricted and months else "*"
         dow_expr = compress(sorted(weekday)) if weekday is not None else "*"
 
         cron_text = (
@@ -300,7 +300,7 @@ def _parse_weekdays(token: str) -> Set[int]:
     return _parse_component(token, 0, 6, _DOW_LOOKUP)
 
 
-def _parse_date(token: str) -> tuple:
+def _parse_date(token: str) -> Tuple[Set[int], Set[int], bool, bool]:
     """Parse ``*-MM-DD`` / ``*-*-DD`` into (days, months, dom, month).
 
     The two booleans say whether the component actually *restricts* the
@@ -325,7 +325,7 @@ def _parse_date(token: str) -> tuple:
     return days, months, dom_restricted, month_restricted
 
 
-def _parse_time(token: str) -> tuple:
+def _parse_time(token: str) -> Tuple[Set[int], Set[int], Set[int]]:
     """Parse ``HH:MM:SS`` into (hours, minutes, seconds)."""
     pieces = token.split(":")
     if len(pieces) == 2:

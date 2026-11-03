@@ -14,12 +14,10 @@ from __future__ import annotations
 from typing import Dict, List, Optional
 
 from ..expr import CronExpression
+from ..notes import LEVEL_INFO, LEVEL_WARNING, Note
 from .base import (
-    LEVEL_INFO,
-    LEVEL_WARNING,
     Conversion,
     Dialect,
-    Note,
     dom_dow_note,
 )
 

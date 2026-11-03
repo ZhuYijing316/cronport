@@ -17,9 +17,10 @@ from __future__ import annotations
 from typing import List, Optional
 
 from ..errors import CronSyntaxError
-from ..expr import CronExpression, DaySemantics
+from ..expr import CronExpression
 from ..fields import format_field
-from .base import LEVEL_ERROR, LEVEL_INFO, LEVEL_WARNING, Conversion, Dialect, Note
+from ..notes import LEVEL_ERROR, LEVEL_INFO, LEVEL_WARNING, Note
+from .base import Conversion, Dialect
 
 
 class AwsEventBridgeDialect(Dialect):
@@ -80,8 +81,9 @@ class AwsEventBridgeDialect(Dialect):
             notes.append(
                 Note(
                     LEVEL_INFO,
-                    f"EventBridge Scheduler can pin the timezone with the scheduleExpressionTimezone "
-                    f"field; EventBridge rules themselves always run in UTC ({tz} needs that field)",
+                    "EventBridge Scheduler can pin the timezone with the "
+                    "scheduleExpressionTimezone field; EventBridge rules themselves "
+                    f"always run in UTC ({tz} needs that field)",
                     f"EventBridge Scheduler 可以用 scheduleExpressionTimezone 字段指定时区；"
                     f"EventBridge 规则本身固定使用 UTC（{tz} 需要借助该字段）",
                 )

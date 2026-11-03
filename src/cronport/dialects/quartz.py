@@ -16,8 +16,8 @@ from typing import Iterable, List, Optional
 from ..errors import CronSyntaxError
 from ..expr import CronExpression, DaySemantics
 from ..fields import FieldSpec, format_field
-from .base import LEVEL_INFO, LEVEL_WARNING, Conversion, Dialect, Note
-
+from ..notes import LEVEL_INFO, LEVEL_WARNING, Note
+from .base import Conversion, Dialect
 
 class QuartzDialect(Dialect):
     """Quartz cron (6 or 7 fields)."""

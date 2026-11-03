@@ -19,12 +19,12 @@ from .dialects import (
     parse_in,
 )
 from .errors import CronportError
-from .fields import FieldSpec
+from .explain import explain
 from .expr import CronExpression, resolve_timezone
-from .explain import WEEKDAY_NAMES_EN, WEEKDAY_NAMES_ZH, explain
+from .fields import FieldSpec
 from .lint import LintContext, lint
 from .notes import LEVEL_ERROR, LEVEL_INFO, LEVEL_WARNING
-from .presets import categories, get_preset, list_presets
+from .presets import get_preset, list_presets
 from .render import Theme
 
 EXIT_OK = 0
@@ -291,12 +291,12 @@ def cmd_convert(args: argparse.Namespace, theme: Theme) -> int:
             count = len(item.notes)
             suffix = f" x{count}" if count > 1 else ""
             note = f"{marker} {worst.level}{suffix}"
-        expression = item.expression
-        if "\n" in expression:
-            first, _, rest = expression.partition("\n")
+        rendered = item.expression
+        if "\n" in rendered:
+            first, _, rest = rendered.partition("\n")
             lines = len(rest.split("\n")) + 1
-            expression = f"{first}  ⏎ +{lines - 1} more line"
-        rows.append([item.target, expression, note])
+            rendered = f"{first}  ⏎ +{lines - 1} more line"
+        rows.append([item.target, rendered, note])
     print(theme.table(headers, rows, indent="  "))
     print()
 
@@ -308,18 +308,18 @@ def cmd_convert(args: argparse.Namespace, theme: Theme) -> int:
             for line in item.expression.split("\n"):
                 print(f"  {theme.value(line)}")
             print()
-        for note in item.notes:
+        for item_note in item.notes:
             painter = {
                 LEVEL_ERROR: theme.error,
                 LEVEL_WARNING: theme.warn,
                 LEVEL_INFO: theme.dim,
-            }[note.level]
+            }[item_note.level]
             marker = {
                 LEVEL_ERROR: theme.symbol("error"),
                 LEVEL_WARNING: theme.symbol("warning"),
                 LEVEL_INFO: theme.symbol("info"),
-            }[note.level]
-            print(f"  {painter(marker)} {note.localized(args.lang)}")
+            }[item_note.level]
+            print(f"  {painter(marker)} {item_note.localized(args.lang)}")
         print()
 
     return EXIT_OK
@@ -363,7 +363,8 @@ def cmd_lint(args: argparse.Namespace, theme: Theme) -> int:
     print()
 
     if not issues:
-        print(f"  {theme.ok(theme.symbol('ok'))} {translator.text('No problems found.', '没有发现问题。')}")
+        message = translator.text("No problems found.", "没有发现问题。")
+        print(f"  {theme.ok(theme.symbol('ok'))} {message}")
         return EXIT_OK
 
     count = len(issues)
@@ -472,7 +473,7 @@ def cmd_presets(args: argparse.Namespace, theme: Theme) -> int:
             )
         expression = CronExpression.parse(preset.expression)
         if args.json:
-            payload = preset.to_dict()
+            payload: Dict[str, object] = dict(preset.to_dict())
             payload["summary"] = explain(expression).to_dict()["summary"]
             _emit_json(payload)
             return EXIT_OK

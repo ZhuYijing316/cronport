@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 from .expr import CronExpression, DaySemantics, days_in_month
 from .notes import LEVEL_ERROR, LEVEL_INFO, LEVEL_WARNING
@@ -372,7 +372,10 @@ def _rule_leap_day(expr: CronExpression, ctx: LintContext) -> Optional[Issue]:
     return Issue(
         rule_id="leap-day",
         severity=LEVEL_INFO,
-        message_en="February 29th only exists in leap years, so this schedule fires once every four years",
+        message_en=(
+            "February 29th only exists in leap years, so this schedule fires "
+            "once every four years"
+        ),
         message_zh="2 月 29 日只在闰年存在，该调度每四年才会触发一次",
         hint_en="make sure your alerting expects that",
         hint_zh="请确认你的告警能接受这种频率",

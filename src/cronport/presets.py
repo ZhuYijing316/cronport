@@ -16,7 +16,7 @@ class Preset:
     title_zh: str
     category: str
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> Dict[str, object]:
         return {
             "key": self.key,
             "expression": self.expression,
@@ -46,7 +46,13 @@ PRESETS: List[Preset] = [
     Preset("monthly-15th", "0 0 15 * *", "Fifteenth day of the month", "每月 15 号", "monthly"),
     Preset("quarterly", "0 0 1 1,4,7,10 *", "First day of each quarter", "每季度第一天", "seasonal"),
     Preset("yearly", "0 0 1 1 *", "First of January", "每年 1 月 1 日", "seasonal"),
-    Preset("hourly-weekdays-9-to-17", "0 9-17 * * 1-5", "Every hour, weekdays 09:00-17:00", "工作日 9-17 点每小时", "maintenance"),
+    Preset(
+        "hourly-weekdays-9-to-17",
+        "0 9-17 * * 1-5",
+        "Every hour, weekdays 09:00-17:00",
+        "工作日 9-17 点每小时",
+        "maintenance",
+    ),
     Preset("nightly-backup", "30 2 * * *", "Nightly backup at 02:30", "每晚 02:30 备份", "maintenance"),
     Preset("weekly-backup", "0 3 * * 0", "Weekly backup on Sunday", "每周日备份", "maintenance"),
     Preset("cert-renewal", "0 4 1 * *", "Certificate renewal check", "证书续期检查", "maintenance"),

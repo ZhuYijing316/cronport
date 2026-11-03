@@ -24,10 +24,10 @@ import calendar
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone, tzinfo
 from enum import Enum
-from typing import Dict, FrozenSet, Iterator, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, Iterator, List, Optional, Tuple
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .errors import CronSyntaxError, CronportError, NoOccurrenceError
-from .notes import Note
 from .fields import (
     DOW_ALIASES,
     MONTH_ALIASES,
@@ -35,8 +35,7 @@ from .fields import (
     format_field,
     parse_field,
 )
-
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from .notes import Note
 
 
 #: ``@macro`` shorthands understood by Vixie cron.
@@ -618,7 +617,7 @@ def _previous_day(when: datetime) -> datetime:
     return (when - timedelta(days=1)).replace(hour=23, minute=59, second=59, microsecond=0)
 
 
-def _next_allowed_month(when: datetime, months: Sequence[int]) -> datetime:
+def _next_allowed_month(when: datetime, months: Iterable[int]) -> datetime:
     ordered = sorted(months)
     for month in ordered:
         if month > when.month:
@@ -626,7 +625,7 @@ def _next_allowed_month(when: datetime, months: Sequence[int]) -> datetime:
     return datetime(when.year + 1, ordered[0], 1)
 
 
-def _previous_allowed_month(when: datetime, months: Sequence[int]) -> datetime:
+def _previous_allowed_month(when: datetime, months: Iterable[int]) -> datetime:
     ordered = sorted(months)
     for month in reversed(ordered):
         if month < when.month:

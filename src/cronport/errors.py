@@ -7,7 +7,7 @@ being scattered across the code base.
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List
 
 
 class CronportError(Exception):

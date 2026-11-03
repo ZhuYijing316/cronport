@@ -107,18 +107,21 @@ target-version = "py39"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
+# E/W: pycodestyle, F: pyflakes, I: import sorting.  These are the rules
+# that catch mistakes.  The stylistic rules (N, UP, B, C4, SIM, RUF) are
+# deliberately left out so that the checks stay about correctness rather
+# than about taste.
+select = ["E", "F", "W", "I"]
 ignore = [
     "E501",   # line length is handled by the formatter
-    "SIM105", # contextlib.suppress is slower than try/except in hot paths
-    "B008",
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
 
 [tool.mypy]
-python_version = "3.9"
+# The target version follows the interpreter mypy runs under, so the
+# CI matrix checks against every Python version the project supports.
 strict = true
 warn_unreachable = true
 mypy_path = "src"

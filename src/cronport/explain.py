@@ -336,14 +336,18 @@ def _field_meaning(name: str, spec: FieldSpec) -> Tuple[str, str]:
         step = _is_progression(values)
         if step:
             return f"every {step} minutes", f"每 {step} 分钟"
-        return f"minutes {_join_en([str(v) for v in values])}", f"第 {_join_zh([str(v) for v in values])} 分钟"
+        listed = _join_en([str(value) for value in values])
+        listed_zh = _join_zh([str(value) for value in values])
+        return f"minutes {listed}", f"第 {listed_zh} 分钟"
 
     if name == "hour":
         if len(values) == 24:
             return "every hour", "每小时"
         if len(values) == 1:
             return f"{values[0]:02d}:00", f"{values[0]:02d} 点"
-        return f"hours {_join_en([f'{v:02d}' for v in values])}", f"{_join_zh([f'{v:02d}' for v in values])} 点"
+        listed = _join_en([f"{value:02d}" for value in values])
+        listed_zh = _join_zh([f"{value:02d}" for value in values])
+        return f"hours {listed}", f"{listed_zh} 点"
 
     if name == "day-of-month":
         if len(values) == 31:
@@ -363,10 +367,14 @@ def _field_meaning(name: str, spec: FieldSpec) -> Tuple[str, str]:
     if name == "second":
         if len(values) == 60:
             return "every second", "每秒"
-        return f"seconds {_join_en([str(v) for v in values])}", f"第 {_join_zh([str(v) for v in values])} 秒"
+        listed = _join_en([str(value) for value in values])
+        listed_zh = _join_zh([str(value) for value in values])
+        return f"seconds {listed}", f"第 {listed_zh} 秒"
 
     if name == "year":
-        return f"years {_join_en([str(v) for v in values])}", f"{_join_zh([str(v) for v in values])} 年"
+        listed = _join_en([str(value) for value in values])
+        listed_zh = _join_zh([str(value) for value in values])
+        return f"years {listed}", f"{listed_zh} 年"
 
     return ", ".join(str(value) for value in values), ", ".join(str(value) for value in values)
 
