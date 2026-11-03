@@ -7,6 +7,61 @@
 
 ---
 
+## Windows 用户：先看这一节
+
+### 怎么打开终端（不用右键菜单）
+
+右键菜单里的「Open Git Bash here」**你不需要它**。三种打开方式，任选一个：
+
+| 方式 | 怎么做 |
+| --- | --- |
+| **开始菜单** | 按 Win 键 → 输入 `Git Bash` → 回车 |
+| **PowerShell** | 按 Win 键 → 输入 `PowerShell` → 回车（**推荐**，脚本都支持） |
+| **Windows Terminal** | Win 键 → 输入 `Terminal` → 回车 |
+
+打开终端后，**先确认 git 装没装**：
+
+```console
+PS> git --version
+git version 2.5x.x.windows.1
+```
+
+看到版本号 = 装好了 ✅ 直接往下做。
+
+如果提示「不是内部或外部命令」，用这一行装（需要管理员权限的终端）：
+
+```console
+PS> winget install --id Git.Git -e --source winget
+```
+
+装完**关掉终端重新开一个**，再试 `git --version`。
+
+### 关于右键菜单那条
+
+如果你还是想让它出现在右键菜单里（Win11 默认把它折叠了）：
+
+- **按住 `Shift` 再右键** —— 直接出完整菜单，最省事
+- 或者右键 → 点最下面的「**显示更多选项**」
+- 如果那里也没有：开始菜单 → 找到 `Git Bash` → 右键 → **打开文件所在位置** → 在那个文件夹里
+  空白处右键，看有没有「在此处打开 Git Bash」
+- 还是没有的话，说明安装时没勾「Windows Explorer integration」，可以重新运行安装包选
+  **Repair** 修复
+
+### 你的脚本有两个版本
+
+| 系统 | 推送 | 发版 |
+| --- | --- | --- |
+| macOS / Linux | `./scripts/first_publish.sh` | `./scripts/release.sh 0.1.0` |
+| **Windows** | `powershell -ExecutionPolicy Bypass -File .\scripts\first_publish.ps1` | `powershell -ExecutionPolicy Bypass -File .\scripts\release.ps1 0.1.0` |
+
+Windows 版还多做了一件事：**它用你的 token 直接把仓库在 GitHub 上建出来**，
+所以你连「新建空仓库」那一步都不用手动做。
+
+Windows 版第一次运行可能会被 Windows 的安全策略拦住（红色横幅），
+按 **Shift + 右键 → 使用 PowerShell 运行** 就不需要改任何设置。
+
+---
+
 ## 0. 你需要记住的三件事
 
 1. **写代码不是你的活。** 有人提 issue → 把内容复制粘贴给我 → 我给你修复
@@ -108,11 +163,22 @@ $ git push
 
 ### 步骤 4：一条命令发布
 
+**macOS / Linux：**
+
 ```console
 $ export TWINE_USERNAME=ZhuYijing316
 $ export TWINE_PASSWORD=pypi-你的token
 $ export GITHUB_TOKEN=github_pat_你的token
 $ ./scripts/release.sh 0.1.1
+```
+
+**Windows（PowerShell）：**
+
+```console
+PS> $env:TWINE_USERNAME = "ZhuYijing316"
+PS> $env:TWINE_PASSWORD = "pypi-你的token"
+PS> $env:GITHUB_TOKEN = "github_pat_你的token"
+PS> powershell -ExecutionPolicy Bypass -File .\scripts\release.ps1 0.1.1
 ```
 
 这条命令会自动：跑测试 → 打包 → 检查 → 上传 PyPI → 打 git tag 并推送 →

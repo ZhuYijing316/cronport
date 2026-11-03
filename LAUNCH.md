@@ -82,11 +82,22 @@ $ git push origin v0.1.0
 
 流程见 `MAINTENANCE.md` 第 3 节，核心就一条命令：
 
+**macOS / Linux：**
+
 ```console
 $ export TWINE_USERNAME=ZhuYijing316
 $ export TWINE_PASSWORD=pypi-你的token
 $ export GITHUB_TOKEN=github_pat_你的token
 $ ./scripts/release.sh 0.1.0
+```
+
+**Windows（PowerShell）：**
+
+```console
+PS> $env:TWINE_USERNAME = "ZhuYijing316"
+PS> $env:TWINE_PASSWORD = "pypi-你的token"
+PS> $env:GITHUB_TOKEN = "github_pat_你的token"
+PS> powershell -ExecutionPolicy Bypass -File .\scripts\release.ps1 0.1.0
 ```
 
 （两个 token 的申请链接在 `MAINTENANCE.md` 里，各 2 分钟。）
